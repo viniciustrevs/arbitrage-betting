@@ -280,6 +280,6 @@ Para dúvidas e suporte:
 
 ---
 
-⭐ **Se este projeto te ajudou, deixe uma estrela no GitHub!**
 
-Desenvolvido com ❤️ para a comunidade brasileira de apostas inteligentes.
+
+
