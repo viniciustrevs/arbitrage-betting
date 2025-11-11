@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: arbitrage_db
+    environment:
+      POSTGRES_DB: arbitrage_betting
+      POSTGRES_USER: arbitrage_user
+      POSTGRES_PASSWORD: strong_password_here
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - arbitrage_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbitrage_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: arbitrage_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - arbitrage_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arbitrage_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arbitrage_user:strong_password_here@postgres:5432/arbitrage_betting
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: your-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - arbitrage_network
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arbitrage_celery
+    command: celery -A app.tasks.celery_tasks worker --loglevel=info --concurrency=4
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arbitrage_user:strong_password_here@postgres:5432/arbitrage_betting
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - arbitrage_network
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arbitrage_celery_beat
+    command: celery -A app.tasks.celery_tasks beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arbitrage_user:strong_password_here@postgres:5432/arbitrage_betting
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - arbitrage_network
+
+volumes:
+  postgres_data:
+
+networks:
+  arbitrage_network:
+    driver: bridge
