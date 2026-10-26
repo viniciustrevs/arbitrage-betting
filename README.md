@@ -1,10 +1,10 @@
 # Sistema de Arbitragem em Apostas Esportivas
 
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
-![Redis](https://img.shields.io/badge/Redis-7-red)
-![Docker](https://img.shields.io/badge/Docker-latest-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue)!
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green)!
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)!
+![Redis](https://img.shields.io/badge/Redis-7-red)!
+![Docker](https://img.shields.io/badge/Docker-latest-blue)!
 
 Sistema completo para **detecção automática de oportunidades de arbitragem** em apostas esportivas, desenvolvido com FastAPI, PostgreSQL, Redis, Celery e Playwright.
 
